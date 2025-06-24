@@ -1,2 +1,2 @@
 # GameDesignClass
-My apps
+My apps, welcome!
