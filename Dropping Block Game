@@ -1,0 +1,286 @@
+import pygame
+import random
+import sys
+
+pygame.init() # Init pygame
+W, H = 400, 400 # Screen setup
+
+screen = pygame.display.set_mode((W, H))
+pygame.display.set_caption("Catch the Falling Blocks")
+
+WHT, BLU, RED, BLK, PNK = (255, 255, 255), (0, 200, 255), (150, 10, 2), (50, 50, 50), (255, 100, 203)
+# Colors
+
+    # Clock and font
+clock = pygame.time.Clock()
+font = pygame.font.SysFont(None, 36)
+
+    # Paddle and block
+paddle = pygame.Rect(W // 2 - 60, H - 20, 120, 10)
+block = pygame.Rect(random.randint(0, W - 20), 0, 20, 20)
+b_speed = 8
+
+score = 0 # Score
+lives = 3
+blocks = [pygame.Rect(random.randint(0, W - 20), 0, 20, 20) for _ in range(1)]  # Start with 3 blocks
+
+    # Game loop
+run = True
+
+while run:
+
+        screen.fill(WHT)
+
+
+
+        for e in pygame.event.get():
+
+            if e.type == pygame.QUIT:
+
+                pygame.quit()
+
+                sys.exit()
+
+
+
+        # Paddle movement
+
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_LEFT] and paddle.left > 0:
+
+            paddle.move_ip(-8, 0)
+
+        if keys[pygame.K_RIGHT] and paddle.right < W:
+
+            paddle.move_ip(8, 0)
+
+
+
+        # Move and process each block
+
+        for block in blocks[:]:  # Use copy of list to modify inside loop
+
+            block.y += b_speed
+
+
+
+            # Check for collision with paddle
+
+            if block.colliderect(paddle):
+
+                block.y = 0
+
+                block.x = random.randint(0, W - 20)
+
+                score += 1
+
+                b_speed += 0.1  # Increase speed slightly for challenge
+
+
+
+            # Block missed
+
+            elif block.y > H:
+
+                lives -= 1
+
+                blocks.remove(block)
+
+                blocks.append(pygame.Rect(random.randint(0, W - 20), 0, 20, 20))  # Replace with new block
+
+
+
+        # Check game over condition
+
+        if lives <= 0:
+
+            game_over = font.render(f"Game Over! Final Score: {score}", True, RED)
+
+            screen.blit(game_over, (W // 2 - 150, H // 2))
+
+            pygame.display.flip()
+
+            pygame.time.wait(3000)
+
+            run = False
+
+
+
+        # Draw paddle and blocks
+
+        pygame.draw.rect(screen, BLK, paddle)
+
+        for block in blocks:
+
+            pygame.draw.rect(screen, PNK, block)
+
+
+
+        # Display score and lives
+
+        score_text = font.render(f"Score: {score}", True, BLK)
+
+        lives_text = font.render(f"Lives: {lives}", True, RED)
+
+        screen.blit(score_text, (10, 10))
+
+        screen.blit(lives_text, (10, 40))
+
+
+
+        pygame.display.flip()
+
+        clock.tick(60)
+
+
+    # Add before lives assignment
+
+def show_restart_screen(score):
+
+        screen.fill(WHT)
+
+        game_over_text = font.render(f"Game Over! Final Score: {score}", True, RED)
+
+        restart_text = font.render("Press R to Restart or Q to Quit", True, BLK)
+
+
+
+        screen.blit(game_over_text, (W // 2 - 170, H // 2 - 30))
+
+        screen.blit(restart_text, (W // 2 - 190, H // 2 + 10))
+
+        pygame.display.flip()
+
+
+
+        waiting = True
+
+        while waiting:
+
+            for e in pygame.event.get():
+
+                if e.type == pygame.QUIT:
+
+                    pygame.quit()
+
+                    sys.exit()
+
+                if e.type == pygame.KEYDOWN:
+
+                    if e.key == pygame.K_r:
+
+                        waiting = False  # Restart
+
+                    elif e.key == pygame.K_q:
+
+                        pygame.quit()
+
+                        sys.exit()
+
+
+    # wrap game logic into main function
+def main_game():
+
+        lives = 3
+
+        score = 0
+
+        b_speed = 5
+
+        paddle = pygame.Rect(W // 2 - 60, H - 20, 120, 10)
+
+        blocks = [pygame.Rect(random.randint(0, W - 20), 0, 20, 20) for _ in range(1)]
+
+
+
+        run = True
+
+        while run:
+
+            screen.fill(WHT)
+
+
+
+            for e in pygame.event.get():
+
+                if e.type == pygame.QUIT:
+
+                    pygame.quit()
+
+                    sys.exit()
+
+
+
+            keys = pygame.key.get_pressed()
+
+            if keys[pygame.K_LEFT] and paddle.left > 0:
+
+                paddle.move_ip(-8, 0)
+
+            if keys[pygame.K_RIGHT] and paddle.right < W:
+
+                paddle.move_ip(8, 0)
+
+
+
+            for block in blocks[:]:
+
+                block.y += b_speed
+
+                if block.colliderect(paddle):
+
+                    block.y = 0
+
+                    block.x = random.randint(0, W - 20)
+
+                    score += 1
+
+                    b_speed += 0.1
+
+                elif block.y > H:
+
+                    lives -= 1
+
+                    blocks.remove(block)
+
+                    blocks.append(pygame.Rect(random.randint(0, W - 20), 0, 20, 20))
+
+
+
+            if lives <= 0:
+
+                show_restart_screen(score)
+
+                return  # Exit current game loop and return to main
+
+
+
+            pygame.draw.rect(screen, BLK, paddle)
+
+            for block in blocks:
+
+                pygame.draw.rect(screen, PNK, block)
+
+
+
+            score_text = font.render(f"Score: {score}", True, BLK)
+
+            lives_text = font.render(f"Lives: {lives}", True, RED)
+
+            screen.blit(score_text, (10, 10))
+
+            screen.blit(lives_text, (10, 40))
+
+
+
+            pygame.display.flip()
+
+            clock.tick(60)
+
+
+    # Run the game and allow restarting
+
+while True:
+
+        main_game()
